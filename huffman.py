@@ -2,11 +2,11 @@
 # henad221@student.liu.se
 
 """
-Do not use this in production.
-It is not usefull at all.
-Lots of overhead
-It encodes/decodes not to a byte object but to a string object
-Only usefull as an example of how this huffman stuff works
+A short example of how to do huffman encoding
+The huffman algorithm consists of the huffman tree, which is just a
+binary tree with chars and weights as data members
+It consists of a Frequency table, that show how important each encountered letter is.
+And a coder that does the whole huffman encoding
 """
 
 import heapq
@@ -34,7 +34,29 @@ class HuffmanTree:
             return "Internal: weight " + str(self.weight) 
 
 
+class FrequencyTable:
+    """
+    A table that contains the weights of each character
+    """
+    
+    def __init__(self, text):
+        self._table = defaultdict(int)
+        self.build_frequency(text)
+
+    def build_frequency(self, text):
+        """ Builds the frequency table """
+        for letter in text:
+            self._table[letter] += 1
+
+    def __getitem__(self, letter):
+        return self._table[letter]
+
+    def __iter__(self):
+        return iter(self._table)
+
+
 def populate(table, huffman_tree, now=""):
+    """ Constructs a table from a huffman tree """
     # Leaf case
     if huffman_tree.is_leaf():
         table[huffman_tree.char] = now
@@ -55,15 +77,6 @@ class HuffmanCoder:
         # The conversion table, contains both from "bits" to chars and from chars to bits
         self.table = dict()
         
-
-    def build_frequency(self, text):
-        """ Builds the frequency table for a text """
-        freq = defaultdict(int)
-        for letter in text:
-            freq[letter] += 1
-            
-        return freq
-        
     def build_table(self, text):
         """
         Takes an input string and calculates frequencies to make a huffman tree.
@@ -71,11 +84,11 @@ class HuffmanCoder:
         """
         assert len(text) > 1
     
-        freq = self.build_frequency(text)
+        freq = FrequencyTable(text)
         
         # Construct beginning heaps
         heap = []
-        for key in freq:            
+        for key in freq:
             heapq.heappush(heap, HuffmanTree(char=key, weight=freq[key]))
         
         # Merge all heaps to get ultimate tree
@@ -94,13 +107,8 @@ class HuffmanCoder:
         """
         Encodes the string with the current table        
         """
-        if not text:
-            return ""
-
-        letter = text[0]
-        assert letter in self.table        
-        return self.table[letter] + self.encode(text[1:])
-
+        return "".join(self.table[letter] for letter in text)
+        
     def decode(self, text):
         """
         Decodes a string with the current table
@@ -121,12 +129,16 @@ class HuffmanCoder:
         return self.table[prefix] + self.decode(text[size:])
 
 if __name__ == "__main__":
-    # Here is a DNA sequence, its quite long
-    text = "I love to take a stroll in the park"
-    #text = "ACAAGATGCCATTGTCCCCCGGCCTCCTGCTGCTGCTGCTCTCCGGGGCCACGGCCACCGCTGCCCTGCCCCTGGAGGGTGGCCCCACCGGCCGAGACAGCGAGCATATGCAGGAAGCGGCAGGAATAAGGAAAAGCAGCCTCCTGACTTTCCTCGCTTGGTGGTTTGAGTGGACCTCCCAGGCCAGTGCCGGGCCCCTCATAGGAGAGGAAGCTCGGGAGGTGGCCAGGCGGCAGGAAGGCGCACCCCCCCAGCAATCCGCGCGCCGGGACAGAATGCCCTGCAGGAACTTCTTCTGGAAGACCTTCTCCTCCTGCAAATAAAACCTCACCCATGAATGCTCACGCAAGTTTAATTACAGACCTGAA"    
+    text = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"
     coder = HuffmanCoder()
     coder.build_table(text)
-    print(coder.encode(text))
-    print(len(text)*8, len(coder.encode(text)), len(text)*8.0 / len(coder.encode(text)))
-    assert text == coder.decode(coder.encode(text))
     
+    print("Original:", text)
+    print()
+    print("Encoded:", coder.encode(text))
+    print()
+    print("Decoded:", coder.decode(coder.encode(text)))
+    print()
+    print("Bytes:", len(text)*8, " vs. ", len(coder.encode(text)))
+    print("Compression ratio (without overhead):", len(coder.encode(text)) / (len(text)*8.0) )
+    assert text == coder.decode(coder.encode(text))
