@@ -35,9 +35,7 @@ class HuffmanTree:
 
 
 class FrequencyTable:
-    """
-    A table that contains the weights of each character
-    """
+    """ A table that contains the weights of each character """
     
     def __init__(self, text):
         self._table = defaultdict(int)
@@ -56,7 +54,7 @@ class FrequencyTable:
 
 
 def populate(table, huffman_tree, now=""):
-    """ Constructs a table from a huffman tree """
+    """ Populates a table from a huffman tree """
     # Leaf case
     if huffman_tree.is_leaf():
         table[huffman_tree.char] = now
@@ -104,15 +102,11 @@ class HuffmanCoder:
 
 
     def encode(self, text):
-        """
-        Encodes the string with the current table        
-        """
+        """ Encodes the string with the current table """
         return "".join(self.table[letter] for letter in text)
         
     def decode(self, text):
-        """
-        Decodes a string with the current table
-        """
+        """ Decodes a string with the current table """
         if not text:
             return ""
 
@@ -139,6 +133,6 @@ if __name__ == "__main__":
     print()
     print("Decoded:", coder.decode(coder.encode(text)))
     print()
-    print("Bytes:", len(text)*8, " vs. ", len(coder.encode(text)))
+    print("Bytes:", len(text)*8, " vs. ", len(coder.encode(text))) # Assume ASCII coding with 1 byte per char
     print("Compression ratio (without overhead):", len(coder.encode(text)) / (len(text)*8.0) )
     assert text == coder.decode(coder.encode(text))
